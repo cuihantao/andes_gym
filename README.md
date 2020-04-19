@@ -1,13 +1,5 @@
-===============================
 andes_gym
-===============================
-
-.. image:: https://img.shields.io/travis/cuihantao/andes_gym.svg
-        :target: https://travis-ci.org/cuihantao/andes_gym
-
-.. image:: https://img.shields.io/pypi/v/andes_gym.svg
-        :target: https://pypi.python.org/pypi/andes_gym
-
+=========
 
 Andes environment for OpenAI Gym
 
