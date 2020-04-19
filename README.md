@@ -59,6 +59,7 @@ python play_freq_ddpg.py
 ```
 
 You may need to install additional packages, such as matplotlib, to show the visualization.
+The matplotlib window might appear frozen, but is actually refreshed after each run.
 
 
 Performance Tips
@@ -69,6 +70,45 @@ While most of the computation time was spent in ANDES, tests show that Linux per
 Currently, it is difficult to install `cvxoptklu` on Windows. Therefore, a Linux box is recommended whenever possible.
 
 Some algorithms can take advantage of multi-core processors but most cannot. Please check the algorithm documentation from stable-baselines to verify. A quick way to check if an algorithm is taking advantage of your multi-core processor is to check the utilization of CPU (in Windows Task Manager or in `htop` of Linux).
+
+Version Control
+---------------
+
+When working on the source code, please branch from `master` and work on your own branch.
+
+You can either use GitHub for Desktop or learn the commands. The following are some commands for quick reference.
+
+
+Branching can be done the collowing command
+
+```
+git checkout -b YOUR_BRANCH_NAME
+```
+where `YOUR_BRANCH_NAME` is the branch name of your choice.
+
+To stage changes, use
+
+```
+git add PATH_TO_FILE
+```
+
+To commit changes, use
+
+```
+git commit 
+```
+
+To push to a not-yet-exising branch, use
+
+```
+git push -u origin YOUR_BRANCH_NAME
+```
+
+After the first push, your local git will memorize the tracking branch. Next time, you can simply push with
+
+```
+git push
+```
 
 
 Features
