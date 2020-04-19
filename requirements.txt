@@ -3,5 +3,5 @@ mpi4py
 gym
 andes
 stable-baselines
-tensorflow==1.14
+tensorflow==1.15
 
