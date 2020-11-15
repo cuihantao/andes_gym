@@ -10,22 +10,21 @@ Yichen Zhang (whoiszyc@hotmail.com)
 Modification and redistribution of this file is subject to a collaboration agreement.
 Derived source code should be made available to all authors.
 """
-import gym
-from gym import error, spaces, utils
-from gym.utils import seeding
-
 import os
+import gym
 import pathlib
 
-# Import general modules
 import matplotlib
-matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 import numpy as np
-from cvxopt import matrix
-
 import andes
+
+from gym import error, spaces, utils
+from gym.utils import seeding
+
+
+matplotlib.use('agg')
 
 
 class AndesFreqControl(gym.Env):
@@ -55,20 +54,21 @@ class AndesFreqControl(gym.Env):
         Environment initialization
         """
         path = pathlib.Path(__file__).parent.absolute()
-        self.path = os.path.join(path, "CL_2machine_mpc.dm")
+        self.path = os.path.join(path, "ieee14_linetrip.xlsx")
 
-        self.tf = 10.0  # end of simulation time
-        self.tstep = 1/60  # simulation time step
-        self.fixt = False  # if we do fixed step integration
+        self.tf = 10.0     # end of simulation time
+        self.tstep = 1/30  # simulation time step
+        self.fixt = True   # if we do fixed step integration
+        self.no_pbar = True
 
         self.action_instants = np.array([0.1, 0.2, 0.5, 0.9, 1.5, 3.5, 5.5])
 
         self.N = len(self.action_instants)  # number of actions
-        self.N_TG = 2  # number of TG1 models
-        self.N_Bus = 5
+        self.N_TG = 5  # number of TG1 models
+        self.N_Bus = 5  # let it be the number of generators for now
 
-        self.action_space = spaces.Box(low=-1, high=1, shape=(self.N_TG,))
-        self.observation_space = spaces.Box(low=-5, high=5, shape=(2 * self.N_Bus,))
+        self.action_space = spaces.Box(low=-0.1, high=0.1, shape=(self.N_TG,))
+        self.observation_space = spaces.Box(low=-5, high=5, shape=(self.N_TG,))
 
         self.i = 0  # index of the current action
 
@@ -101,15 +101,16 @@ class AndesFreqControl(gym.Env):
         """
         self.i = 0
 
-        self.sim_case = andes.main.run(self.path, routine="pflow", no_output=True)
+        self.sim_case = andes.run(self.path, no_output=True)
+        self.sim_case.TDS.init()
 
-        # TODO: some configurations
-        self.sim_case.tds.config.fixt = self.fixt
+        # configurations
+        self.sim_case.TDS.config.fixt = self.fixt
 
-        # TODO: fix the hardcode
-        self.pm0 = matrix(self.sim_case.TG1.pm0)  # original pm0
-        self.w = matrix(self.sim_case.BusFreq.w)
-        self.dwdt = matrix(self.sim_case.BusFreq.dwdt)
+        # sensed signals
+        self.w = np.array(self.sim_case.GENROU.omega.a)
+        # self.dwdt = np.array(self.sim_case.BusFreq.dwdt)
+        self.tg_idx = [i for i in self.sim_case.TurbineGov._idx2model.keys()]
 
         self.action_last = np.zeros(self.N_TG)
         # TODO: add the load disturbance model
@@ -130,15 +131,15 @@ class AndesFreqControl(gym.Env):
         if self.i < len(self.action_instants):
             next_time = float(self.action_instants[self.i])
 
-        self.sim_case.tds.config.tf = next_time
+        self.sim_case.TDS.config.tf = next_time
         self.i += 1
 
-        return self.sim_case.tds.run()
+        return self.sim_case.TDS.run(self.no_pbar)
 
     def reset(self):
         print("Env reset.")
         self.initialize()
-        return np.append(np.ones(shape=(self.N_Bus, )) ,np.zeros(shape=(self.N_Bus, ) ))
+        return np.ones(shape=(self.N_Bus, ))
 
     def step(self, action):
         """
@@ -154,16 +155,20 @@ class AndesFreqControl(gym.Env):
 
         # apply control for current step
         # NOTE: the negative value of action will contribute to the "increase" of generator's pm
-        self.sim_case.TG1.pm0 = self.pm0 - matrix(action.astype(float))
+        self.sim_case.TurbineGov.set(
+            src='pext', idx=self.tg_idx, value=action, attr='v')
 
-        # Run andes tds to the next time and increment self.i by 1
+        # Run andes TDS to the next time and increment self.i by 1
         sim_crashed = not self.sim_to_next()
 
         # get frequency and ROCOF data
-        freq = np.array(self.sim_case.dae.x[self.w]).reshape((-1, ))
-        rocof = np.array(self.sim_case.dae.y[self.dwdt]).reshape((-1, ))
+        freq = self.sim_case.dae.x[self.w]
 
-        obs = np.append(freq, rocof)
+        # --- Temporarily disable ROCOF ---
+        # rocof = np.array(self.sim_case.dae.y[self.dwdt]).reshape((-1, ))
+        # obs = np.append(freq, rocof)
+
+        obs = freq
 
         if sim_crashed:
             reward -= 9999
@@ -192,8 +197,9 @@ class AndesFreqControl(gym.Env):
             print("Total Rewards: {}".format(sum(self.reward_print)))
 
             # store data for rendering. To workwround automatic resetting by VecEnv
-            widx = self.w + 1
-            xdata, ydata = self.sim_case.varout.get_xy(widx)
+            widx = self.w
+            xdata = self.sim_case.dae.ts.t
+            ydata = self.sim_case.dae.ts.x[:, widx]
 
             self.t_render = np.array(xdata).reshape((-1, 1))
             self.final_obs_render = np.array(ydata).reshape((self.N_Bus, -1))
