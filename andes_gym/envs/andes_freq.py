@@ -151,7 +151,6 @@ class AndesFreqControl(gym.Env):
             done = True
 
         # apply control for current step
-        # NOTE: the negative value of action will contribute to the "increase" of generator's pm
         self.sim_case.TurbineGov.set(
             src='pext', idx=self.tg_idx, value=action, attr='v')
 
@@ -200,8 +199,9 @@ class AndesFreqControl(gym.Env):
             xdata = self.sim_case.dae.ts.t
             ydata = self.sim_case.dae.ts.x[:, widx]
 
-            self.t_render = np.array(xdata).reshape((-1, 1))
-            self.final_obs_render = np.array(ydata).reshape((self.N_Bus, -1))
+            self.t_render = np.array(xdata)
+            self.final_obs_render = np.array(ydata)
+
 
         return obs, reward, done, {}
 
@@ -210,7 +210,7 @@ class AndesFreqControl(gym.Env):
         print("Entering render...")
 
         if self.fig is None:
-            self.fig = plt.figure(figsize=(4, 3))
+            self.fig = plt.figure(figsize=(9, 6))
 
             self.ax = self.fig.add_subplot(1, 1, 1)
 
@@ -230,9 +230,10 @@ class AndesFreqControl(gym.Env):
             self.ax.ticklabel_format(useOffset=False)
 
         for i in range(self.N_Bus):
-            self.ax.plot(self.t_render, self.final_obs_render[i, :])
+            self.ax.plot(self.t_render, self.final_obs_render[:, i])
 
-        plt.draw()
+        self.fig.canvas.draw()
+
         img = np.frombuffer(self.fig.canvas.tostring_rgb(), dtype=np.uint8)
         img = img.reshape(self.fig.canvas.get_width_height()[::-1] + (3,))
 
