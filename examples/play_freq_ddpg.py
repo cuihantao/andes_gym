@@ -2,10 +2,9 @@ import gym
 import andes_gym
 import numpy as np
 
-from stable_baselines.ddpg.policies import MlpPolicy
-from stable_baselines.common.vec_env import DummyVecEnv
-from stable_baselines.ddpg.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise, AdaptiveParamNoiseSpec
-from stable_baselines import DDPG
+from stable_baselines3.ddpg.policies import MlpPolicy
+from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3 import DDPG
 
 
 def main():

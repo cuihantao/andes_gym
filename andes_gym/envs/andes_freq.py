@@ -24,9 +24,6 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 
-matplotlib.use('agg')
-
-
 class AndesFreqControl(gym.Env):
     """
     Load frequency control environment using ANDES.
@@ -67,7 +64,7 @@ class AndesFreqControl(gym.Env):
         self.N_TG = 5  # number of TG1 models
         self.N_Bus = 5  # let it be the number of generators for now
 
-        self.action_space = spaces.Box(low=-0.1, high=0.1, shape=(self.N_TG,))
+        self.action_space = spaces.Box(low=-0.01, high=0.01, shape=(self.N_TG,))
         self.observation_space = spaces.Box(low=-5, high=5, shape=(self.N_TG,))
 
         self.i = 0  # index of the current action
@@ -198,6 +195,8 @@ class AndesFreqControl(gym.Env):
 
             # store data for rendering. To workwround automatic resetting by VecEnv
             widx = self.w
+
+            self.sim_case.dae.ts.unpack()
             xdata = self.sim_case.dae.ts.t
             ydata = self.sim_case.dae.ts.x[:, widx]
 
