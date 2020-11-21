@@ -51,20 +51,20 @@ class AndesFreqControl(gym.Env):
         Environment initialization
         """
         path = pathlib.Path(__file__).parent.absolute()
-        self.path = os.path.join(path, "ieee14_linetrip.xlsx")
+        self.path = os.path.join(path, "ieee14_alter_pq.xlsx")
 
         self.tf = 10.0     # end of simulation time
         self.tstep = 1/30  # simulation time step
         self.fixt = True   # if we do fixed step integration
         self.no_pbar = True
 
-        self.action_instants = np.array([0.1, 0.2, 0.5, 0.9, 1.5, 3.5, 5.5])
+        self.action_instants = np.array([0.5, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 3.5, 5.5, 6, 8, 10])
 
         self.N = len(self.action_instants)  # number of actions
         self.N_TG = 5  # number of TG1 models
         self.N_Bus = 5  # let it be the number of generators for now
 
-        self.action_space = spaces.Box(low=-0.01, high=0.01, shape=(self.N_TG,))
+        self.action_space = spaces.Box(low=-0.1, high=0.1, shape=(self.N_TG,))
         self.observation_space = spaces.Box(low=-5, high=5, shape=(self.N_TG,))
 
         self.i = 0  # index of the current action
@@ -99,6 +99,12 @@ class AndesFreqControl(gym.Env):
         self.i = 0
 
         self.sim_case = andes.run(self.path, no_output=True)
+        self.sim_case.PQ.config.p2p = 1
+        self.sim_case.PQ.config.p2z = 0
+        self.sim_case.PQ.config.p2i = 0
+        self.sim_case.PQ.config.q2q = 1
+        self.sim_case.PQ.config.q2z = 0
+        self.sim_case.PQ.config.q2i = 0
         self.sim_case.TDS.init()
 
         # configurations
@@ -152,7 +158,7 @@ class AndesFreqControl(gym.Env):
 
         # apply control for current step
         self.sim_case.TurbineGov.set(
-            src='pext', idx=self.tg_idx, value=action, attr='v')
+            src='paux0', idx=self.tg_idx, value=action, attr='v')
 
         # Run andes TDS to the next time and increment self.i by 1
         sim_crashed = not self.sim_to_next()

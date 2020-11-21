@@ -16,5 +16,5 @@ n_actions = env.action_space.shape[-1]
 param_noise = None
 
 model = DDPG(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=2000)
+model.learn(total_timesteps=20000)
 model.save("andes_freq_ddpg.pkl")
