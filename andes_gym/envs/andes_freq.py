@@ -177,12 +177,12 @@ class AndesFreqControl(gym.Env):
             done = True
 
         # reward functions
-        reward -= np.sum(np.abs(2 * 100 * action))
+        # reward -= np.sum(np.abs(2 * 100 * action))
 
         if not sim_crashed and done:
-            reward -= np.sum(np.abs(60 * 15000 * (freq - 1)))
+            reward -= np.sum(np.abs(60 * 100 * (freq - 1)))
         else:
-            reward -= np.sum(np.abs(50 * 15000 * (freq - 1)))
+            reward -= np.sum(np.abs(60 * 1000 * (freq - 1)))
 
         # store last action
         self.action_last = action
