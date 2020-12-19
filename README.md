@@ -1,13 +1,12 @@
-andes_gym
-=========
+# andes_gym
+
 
 Andes environment for OpenAI Gym
 
 * Free software: GPL v3+
 
 
-Installation
-------------
+## Installation
 
 Create an empty conda environment with
 
@@ -33,8 +32,52 @@ Install `mpi4py` from Intel with
 conda install -c intel mpi4py
 ```
 
-In the root directory of `andes_gym` , install `andes_gym` in the development mode with
+Install `gym`
+```bash
+pip install gym==0.14
+```
 
+
+### If plan to use `tensorflow`
+
+Install `tensorflow (cpu version)`
+```bash
+pip install tensorflow==1.14
+```
+
+Install `keras`
+```bash
+pip install keras==2.3
+```
+
+Install `stable-baselines` or `stable-baselines3`
+Refer to the [stable-baselines](https://github.com/hill-a/stable-baselines) website or [stable-baselines3](https://github.com/whoiszyc/stable-baselines3) for detailed instruction.
+
+For `stable-baselines`
+
+Option 1:
+First `Homebrew` will be needed. Then, install the dependencies of `stable-baselines` as
+```bash
+brew install cmake openmpi
+```
+Then, open the `stable-baselines` repo, cd to the directory and 
+```bash
+pip install -e .
+```
+Option 2:
+```bash
+pip install stable-baselines
+```
+
+### If plan to use `pytorch`
+
+For `stable-baselines3` （uses Pytorch 1.7）
+```bash
+pip install stable-baselines3
+```
+
+### Install `andes_gym`
+In the root directory of `andes_gym` , install `andes_gym` in the development mode with
 ```bash
 pip install -e .
 ```
