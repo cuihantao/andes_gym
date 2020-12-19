@@ -5,7 +5,7 @@ This file was part of gym-power and is now part of andes_gym.
 
 Authors:
 Hantao Cui (cuihantao@gmail.com)
-Yichen Zhang (whoiszyc@hotmail.com)
+Yichen Zhang (whoiszyc@live.com)
 
 Modification and redistribution of this file is subject to a collaboration agreement.
 Derived source code should be made available to all authors.

@@ -20,12 +20,18 @@ Clone the repository with
 conda create -n andes_gym --yes
 ```
 
-Install the previous version of ANDES with
-
+### Install ANDES
+The detailed instruction of Andes installation can be found [here](https://andes.readthedocs.io/en/stable/install.html).
 ```bash
-pip install andes==0.6.9
+conda config --add channels conda-forge
+conda config --set channel_priority flexible
+```
+Use `conda install` instead of `pip install` for `andes` installation
+```bash
+conda install andes
 ```
 
+### Install GYM
 Install `mpi4py` from Intel with
 
 ```bash
@@ -34,11 +40,11 @@ conda install -c intel mpi4py
 
 Install `gym`
 ```bash
-pip install gym==0.14
+pip install gym
 ```
 
 
-### If plan to use `tensorflow`
+### Stable-baselines supporting `tensorflow`
 
 Install `tensorflow (cpu version)`
 ```bash
@@ -69,7 +75,7 @@ Option 2:
 pip install stable-baselines
 ```
 
-### If plan to use `pytorch`
+### Stable-baselines supporting `pytorch`
 
 For `stable-baselines3` （uses Pytorch 1.7）
 ```bash

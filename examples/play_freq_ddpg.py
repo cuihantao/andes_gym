@@ -11,7 +11,7 @@ def main():
     env = gym.make('AndesFreqControl-v0')
     env = DummyVecEnv([lambda: env])
 
-    model = DDPG.load("andes_freq_ddpg.pkl")
+    model = DDPG.load("andes_freq_ddpg")
 
     obs = env.reset()
 
