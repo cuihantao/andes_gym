@@ -7,17 +7,9 @@ Andes environment for OpenAI Gym
 
 
 ## Installation
-
 Create an empty conda environment with
-
 ```bash
-git clone https://github.com/cuihantao/andes_gym
-```
-
-Clone the repository with
-
-```bash
-conda create -n andes_gym --yes
+conda create -n drl-andes python=3.8
 ```
 
 ### Install ANDES
@@ -29,6 +21,16 @@ conda config --set channel_priority flexible
 Use `conda install` instead of `pip install` for `andes` installation
 ```bash
 conda install andes
+```
+or in the root directory of `andes`, run
+```bash
+conda install --file requirements.txt
+conda install --file requirements-dev.txt
+python3 -m pip install -e .
+```
+Test if `andes` has been successfully installed by
+```bash
+andes selftest
 ```
 
 ### Install GYM
@@ -48,12 +50,12 @@ pip install gym
 
 Install `tensorflow (cpu version)`
 ```bash
-pip install tensorflow==1.14
+pip install tensorflow
 ```
 
 Install `keras`
 ```bash
-pip install keras==2.3
+pip install keras
 ```
 
 Install `stable-baselines` or `stable-baselines3`
@@ -76,10 +78,13 @@ pip install stable-baselines
 ```
 
 ### Stable-baselines supporting `pytorch`
-
 For `stable-baselines3` （uses Pytorch 1.7）
 ```bash
 pip install stable-baselines3
+```
+or in the root directory
+```bash
+pip install -e .
 ```
 
 ### Install `andes_gym`

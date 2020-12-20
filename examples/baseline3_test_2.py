@@ -1,14 +1,15 @@
 import gym
 import numpy as np
 import os
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+# os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
 from stable_baselines3 import DQN
 from stable_baselines3.dqn import MlpPolicy
 
 env = gym.make('CartPole-v0')
 
 model = DQN(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=100, log_interval=4)
+model.learn(total_timesteps=100000, log_interval=4)
 model.save("CartPole_dqn.pkl")
 
 del model # remove to demonstrate saving and loading
