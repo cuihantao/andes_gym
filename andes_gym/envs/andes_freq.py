@@ -58,7 +58,10 @@ class AndesFreqControl(gym.Env):
         self.fixt = True   # if we do fixed step integration
         self.no_pbar = True
 
-        self.action_instants = np.array([0.5, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 3.5, 5.5, 6, 8, 10])
+        # we need to let the agent to observe the disturbed trajectory before any actions taken,
+        # therefore the following instant sequence is not correct: np.array([0.1, 5, 10]).
+        # Instead, we will use this instant sequence: np.array([5,..., 10])
+        self.action_instants = np.array([5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10])
 
         self.N = len(self.action_instants)  # number of actions
         self.N_TG = 5  # number of TG1 models
@@ -97,7 +100,6 @@ class AndesFreqControl(gym.Env):
         Initialize the andes simulation
         """
         self.i = 0
-
         self.sim_case = andes.run(self.path, no_output=True)
         self.sim_case.PQ.config.p2p = 1
         self.sim_case.PQ.config.p2z = 0
@@ -106,6 +108,8 @@ class AndesFreqControl(gym.Env):
         self.sim_case.PQ.config.q2z = 0
         self.sim_case.PQ.config.q2i = 0
         self.sim_case.TDS.init()
+
+        self.sim_case.Alter.amount.v[0] = 0.1
 
         # configurations
         self.sim_case.TDS.config.fixt = self.fixt
@@ -122,7 +126,11 @@ class AndesFreqControl(gym.Env):
         assert self.sim_to_next(), "First simulation step failed"
 
         self.freq_print = []
-        self.action_print = []
+        self.action_0_print = []
+        self.action_1_print = []
+        self.action_2_print = []
+        self.action_3_print = []
+        self.action_4_print = []
         self.reward_print = []
 
     def sim_to_next(self):
@@ -142,7 +150,9 @@ class AndesFreqControl(gym.Env):
     def reset(self):
         print("Env reset.")
         self.initialize()
-        return np.ones(shape=(self.N_Bus, ))
+        freq = self.sim_case.dae.x[self.w]
+        self.freq_print.append(freq[0])
+        return freq
 
     def step(self, action):
         """
@@ -152,7 +162,7 @@ class AndesFreqControl(gym.Env):
         done = False
 
         # Get the next action time in the list
-        if self.i >= len(self.action_instants):
+        if self.i >= len(self.action_instants) - 1:  # the learning ends before the last instant
             # all actions have been taken. wrap up the simulation
             done = True
 
@@ -189,11 +199,27 @@ class AndesFreqControl(gym.Env):
 
         # add the first frequency value to `self.freq_print`
         self.freq_print.append(freq[0])
-        self.action_print.append(action[0])
+        self.action_0_print.append(action[0])
+        self.action_1_print.append(action[1])
+        self.action_2_print.append(action[2])
+        self.action_3_print.append(action[3])
+        self.action_4_print.append(action[4])
         self.reward_print.append(reward)
 
         if done:
-            print("Action #0: {}".format(self.action_print))
+            self.action_total_print = []
+            for i in range(len(self.action_0_print)):
+                self.action_total_print.append(self.action_0_print[i]
+                                               + self.action_1_print[i]
+                                               + self.action_2_print[i]
+                                               + self.action_3_print[i]
+                                               + self.action_4_print[i])
+            print("Action #0: {}".format(self.action_0_print))
+            print("Action #1: {}".format(self.action_1_print))
+            print("Action #2: {}".format(self.action_2_print))
+            print("Action #3: {}".format(self.action_3_print))
+            print("Action #4: {}".format(self.action_4_print))
+            print("Action Total: {}".format(self.action_total_print))
             print("Freq on #0: {}".format(self.freq_print))
             print("Rewards: {}".format(self.reward_print))
             print("Total Rewards: {}".format(sum(self.reward_print)))

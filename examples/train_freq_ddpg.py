@@ -16,13 +16,13 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3 import DDPG
 
 env = gym.make('AndesFreqControl-v0')
-env = DummyVecEnv([lambda: env])
+# env = DummyVecEnv([lambda: env])
+#
+# # the noise objects for DDPG
+# n_actions = env.action_space.shape[-1]
+# param_noise = None
 
-# the noise objects for DDPG
-n_actions = env.action_space.shape[-1]
-param_noise = None
-
-model = DDPG(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=100)
+model = DDPG(MlpPolicy, env, verbose=1, learning_starts=10)
+model.learn(total_timesteps=2000)
 print("training completed")
 model.save("andes_freq_ddpg.pkl")
