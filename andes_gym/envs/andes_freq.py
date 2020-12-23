@@ -109,7 +109,7 @@ class AndesFreqControl(gym.Env):
         self.sim_case.PQ.config.q2i = 0
         self.sim_case.TDS.init()
 
-        self.sim_case.Alter.amount.v[0] = 0.1
+        self.sim_case.Alter.amount.v[0] = 0.5
 
         # configurations
         self.sim_case.TDS.config.fixt = self.fixt
