@@ -2,6 +2,7 @@ import gym
 import numpy as np
 import andes_gym
 import os
+import matplotlib.pyplot as plt
 
 # OMP: Error #15: Initializing libiomp5.dylib, but found libomp.dylib already initialized.
 # OMP: Hint This means that multiple copies of the OpenMP runtime have been linked into the program.
@@ -23,6 +24,20 @@ env = gym.make('AndesFreqControl-v0')
 # param_noise = None
 
 model = DDPG(MlpPolicy, env, verbose=1, learning_starts=10)
-model.learn(total_timesteps=2000)
+model.learn(total_timesteps=3000)
 print("training completed")
 model.save("andes_freq_ddpg.pkl")
+
+# plot the results
+plt.rcParams.update({'font.family': 'Arial'})
+plt.figure(figsize=(9, 7))
+plt.plot(env.final_freq, color='blue', alpha=1, linewidth=2)
+plt.xlabel("Episode", fontsize=20)
+plt.ylabel("Frequency (Hz)", fontsize=20)
+plt.grid()
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.title("Restored frequency uder random disturbance via DRL secondary control", fontsize=16)
+plt.show()
+plt.tight_layout()
+plt.savefig("restored_frequency.png")

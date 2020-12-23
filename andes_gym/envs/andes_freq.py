@@ -16,7 +16,7 @@ import pathlib
 
 import matplotlib
 import matplotlib.pyplot as plt
-
+import random
 import numpy as np
 import andes
 
@@ -88,6 +88,9 @@ class AndesFreqControl(gym.Env):
         self.action_print = []
         self.reward_print = []
 
+        # record the final frequency
+        self.final_freq = []
+
     def seed(self, seed=None):
         """
         Generate the amount of load disturbance
@@ -109,7 +112,9 @@ class AndesFreqControl(gym.Env):
         self.sim_case.PQ.config.q2i = 0
         self.sim_case.TDS.init()
 
-        self.sim_case.Alter.amount.v[0] = 0.5
+        # random or fixed disturbance
+        # self.sim_case.Alter.amount.v[0] = 1
+        self.sim_case.Alter.amount.v[0] = random.uniform(0.1, 0.5)
 
         # configurations
         self.sim_case.TDS.config.fixt = self.fixt
@@ -221,8 +226,13 @@ class AndesFreqControl(gym.Env):
             print("Action #4: {}".format(self.action_4_print))
             print("Action Total: {}".format(self.action_total_print))
             print("Freq on #0: {}".format(self.freq_print))
+            print("Freq postfault: {}".format(self.freq_print[0] * 60))
+            print("Freq after control: {}".format(self.freq_print[-1] * 60))
             print("Rewards: {}".format(self.reward_print))
             print("Total Rewards: {}".format(sum(self.reward_print)))
+
+            # record the final frequency
+            self.final_freq.append(self.freq_print[-1] * 60)
 
             # store data for rendering. To workwround automatic resetting by VecEnv
             widx = self.w
