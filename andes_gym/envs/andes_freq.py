@@ -61,13 +61,13 @@ class AndesFreqControl(gym.Env):
         # we need to let the agent to observe the disturbed trajectory before any actions taken,
         # therefore the following instant sequence is not correct: np.array([0.1, 5, 10]).
         # Instead, we will use this instant sequence: np.array([5,..., 10])
-        self.action_instants = np.array([5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10])
+        self.action_instants = np.linspace(5, 10, 20)
 
         self.N = len(self.action_instants)  # number of actions
         self.N_TG = 5  # number of TG1 models
         self.N_Bus = 5  # let it be the number of generators for now
 
-        self.action_space = spaces.Box(low=-0.1, high=0.1, shape=(self.N_TG,))
+        self.action_space = spaces.Box(low=-0.3, high=0.3, shape=(self.N_TG,))
         self.observation_space = spaces.Box(low=-5, high=5, shape=(self.N_TG,))
 
         self.i = 0  # index of the current action
@@ -113,8 +113,9 @@ class AndesFreqControl(gym.Env):
         self.sim_case.TDS.init()
 
         # random or fixed disturbance
-        # self.sim_case.Alter.amount.v[0] = 1
-        self.sim_case.Alter.amount.v[0] = random.uniform(0.1, 0.5)
+        self.disturbance = 0.6  ## random.uniform(0.2, 0.5)
+        # self.disturbance = random.uniform(0.2, 0.5)
+        self.sim_case.Alter.amount.v[0] = self.disturbance
 
         # configurations
         self.sim_case.TDS.config.fixt = self.fixt
@@ -185,7 +186,7 @@ class AndesFreqControl(gym.Env):
         # rocof = np.array(self.sim_case.dae.y[self.dwdt]).reshape((-1, ))
         # obs = np.append(freq, rocof)
 
-        obs = freq
+        obs = freq * 1  # make the observation in larger units
 
         if sim_crashed:
             reward -= 9999
@@ -195,9 +196,9 @@ class AndesFreqControl(gym.Env):
         # reward -= np.sum(np.abs(2 * 100 * action))
 
         if not sim_crashed and done:
-            reward -= np.sum(np.abs(60 * 100 * (freq - 1)))
+            reward -= np.sum(np.abs(3000 * (freq - 1)))
         else:
-            reward -= np.sum(np.abs(60 * 1000 * (freq - 1)))
+            reward -= np.sum(np.abs(100 * (freq - 1)))
 
         # store last action
         self.action_last = action
@@ -225,6 +226,7 @@ class AndesFreqControl(gym.Env):
             print("Action #3: {}".format(self.action_3_print))
             print("Action #4: {}".format(self.action_4_print))
             print("Action Total: {}".format(self.action_total_print))
+            print("Disturbance: {}".format(self.disturbance))
             print("Freq on #0: {}".format(self.freq_print))
             print("Freq postfault: {}".format(self.freq_print[0] * 60))
             print("Freq after control: {}".format(self.freq_print[-1] * 60))
