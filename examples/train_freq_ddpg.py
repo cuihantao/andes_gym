@@ -1,4 +1,5 @@
 import gym
+import pandas as pd
 import numpy as np
 import andes_gym
 import os
@@ -16,27 +17,38 @@ import torch
 from stable_baselines3.ddpg.policies import MlpPolicy
 from stable_baselines3 import DDPG
 
-# setup environment and model
-env = gym.make('AndesFreqControl-v0')
-policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=[128, 64])
-model = DDPG(MlpPolicy, env, verbose=1, policy_kwargs=policy_kwargs)  # , learning_starts=500
+plot_episode = True
+save_dir = "delay_learning_0_final_2000_action_number_40/"
 
-# start training
-time_start = time.time()
-model.learn(total_timesteps=2000)
-print("training completed using {}".format(time.time() - time_start))
-# model.save("andes_freq_ddpg_fix2.pkl")
+for id in range(1, 11):
+    # setup environment and model
+    env = gym.make('AndesFreqControl-v0')
+    policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=[128, 64])
+    model = DDPG(MlpPolicy, env, verbose=1, policy_kwargs=policy_kwargs)  # , learning_starts=500
 
-# plot the results
-plt.rcParams.update({'font.family': 'Arial'})
-plt.figure(figsize=(9, 7))
-plt.plot(env.final_freq, color='blue', alpha=1, linewidth=2)
-plt.xlabel("Episode", fontsize=20)
-plt.ylabel("Frequency (Hz)", fontsize=20)
-plt.grid()
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-plt.title("Restored frequency under fixed disturbance via DRL secondary control", fontsize=16)
-plt.show()
-plt.tight_layout()
-plt.savefig("restored_frequency_fix.png")
+    # start training
+    time_start = time.time()
+    model.learn(total_timesteps=4000)
+    print("training {} completed using {}".format(id, time.time() - time_start))
+
+    # save model
+    model.save(save_dir + "andes_secfreq_ddpg_fix_{}.pkl".format(id))
+
+    # save data
+    freq = pd.DataFrame(env.final_freq)
+    freq.to_csv(save_dir + "andes_secfreq_ddpg_fix_{}.csv".format(id))
+
+    # plot the results
+    if plot_episode == True:
+        plt.rcParams.update({'font.family': 'Arial'})
+        plt.figure(figsize=(9, 7))
+        plt.plot(env.final_freq, color='blue', alpha=1, linewidth=2)
+        plt.xlabel("Episode", fontsize=20)
+        plt.ylabel("Frequency (Hz)", fontsize=20)
+        plt.grid()
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.title("Restored frequency under fixed disturbance via DRL secondary control", fontsize=16)
+        plt.tight_layout()
+        plt.savefig(save_dir + "andes_secfreq_ddpg_fix_{}.png".format(id))
+
