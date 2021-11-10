@@ -18,17 +18,17 @@ from stable_baselines3.ddpg.policies import MlpPolicy
 from stable_baselines3 import DDPG
 
 plot_episode = True
-save_dir = "delay_learning_0_final_2000_action_number_40/"
+save_dir = "delay_learning_200_action_40/"
 
 for id in range(1, 11):
     # setup environment and model
     env = gym.make('AndesFreqControl-v0')
     policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=[128, 64])
-    model = DDPG(MlpPolicy, env, verbose=1, policy_kwargs=policy_kwargs)  # , learning_starts=500
+    model = DDPG(MlpPolicy, env, verbose=1, policy_kwargs=policy_kwargs, learning_starts=200)  #
 
     # start training
     time_start = time.time()
-    model.learn(total_timesteps=4000)
+    model.learn(total_timesteps=8000)  # we need to change the total steps with action numbers
     print("training {} completed using {}".format(id, time.time() - time_start))
 
     # save model
@@ -36,7 +36,7 @@ for id in range(1, 11):
 
     # save data
     freq = pd.DataFrame(env.final_freq)
-    freq.to_csv(save_dir + "andes_secfreq_ddpg_fix_{}.csv".format(id))
+    freq.to_csv(save_dir + "andes_secfreq_ddpg_fix_{}.csv".format(id), index=False)
 
     # plot the results
     if plot_episode == True:

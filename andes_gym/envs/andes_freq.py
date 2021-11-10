@@ -61,7 +61,7 @@ class AndesFreqControl(gym.Env):
         # we need to let the agent to observe the disturbed trajectory before any actions taken,
         # therefore the following instant sequence is not correct: np.array([0.1, 5, 10]).
         # Instead, we will use this instant sequence: np.array([5,..., 10])
-        self.action_instants = np.linspace(5, 10, 40)
+        self.action_instants = np.linspace(5, 20, 20)
 
         self.N = len(self.action_instants)  # number of actions
         self.N_TG = 5  # number of TG1 models
@@ -186,7 +186,7 @@ class AndesFreqControl(gym.Env):
         # rocof = np.array(self.sim_case.dae.y[self.dwdt]).reshape((-1, ))
         # obs = np.append(freq, rocof)
 
-        obs = freq * 1  # make the observation in larger units
+        obs = freq
 
         if sim_crashed:
             reward -= 9999
@@ -260,8 +260,10 @@ class AndesFreqControl(gym.Env):
 
             self.ax.set_xlim(left=0, right=np.max(self.t_render))
             self.ax.set_ylim(auto=True)
-            self.ax.set_xlabel("Time [s]")
-            self.ax.set_ylabel("Bus Frequency [pu]")
+            self.ax.xaxis.set_tick_params(labelsize=16)
+            self.ax.yaxis.set_tick_params(labelsize=16)
+            self.ax.set_xlabel("Time [s]", fontsize=16)
+            self.ax.set_ylabel("Bus Frequency [Hz]", fontsize=16)
             self.ax.ticklabel_format(useOffset=False)
 
             plt.ion()
@@ -269,12 +271,12 @@ class AndesFreqControl(gym.Env):
             self.ax.clear()
             self.ax.set_xlim(left=0, right=np.max(self.t_render))
             self.ax.set_ylim(auto=True)
-            self.ax.set_xlabel("Time [s]")
-            self.ax.set_ylabel("Bus Frequency [pu]")
+            self.ax.set_xlabel("Time [s]", fontsize=16)
+            self.ax.set_ylabel("Bus Frequency [Hz]", fontsize=16)
             self.ax.ticklabel_format(useOffset=False)
 
         for i in range(self.N_Bus):
-            self.ax.plot(self.t_render, self.final_obs_render[:, i])
+            self.ax.plot(self.t_render, self.final_obs_render[:, i]*60)
 
         self.fig.canvas.draw()
 
