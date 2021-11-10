@@ -18,7 +18,9 @@ from stable_baselines3.ddpg.policies import MlpPolicy
 from stable_baselines3 import DDPG
 
 plot_episode = True
-save_dir = "delay_learning_200_action_40/"
+save_dir = "delay_learning_200_action_20_new/"
+
+# notes: the old data use total steps = 4000 with 20 actions; new data use total steps = 2000 with 20 actions
 
 for id in range(1, 11):
     # setup environment and model
@@ -28,7 +30,7 @@ for id in range(1, 11):
 
     # start training
     time_start = time.time()
-    model.learn(total_timesteps=8000)  # we need to change the total steps with action numbers
+    model.learn(total_timesteps=4000)  # we need to change the total steps with action numbers
     print("training {} completed using {}".format(id, time.time() - time_start))
 
     # save model

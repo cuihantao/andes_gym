@@ -61,7 +61,7 @@ class AndesFreqControl(gym.Env):
         # we need to let the agent to observe the disturbed trajectory before any actions taken,
         # therefore the following instant sequence is not correct: np.array([0.1, 5, 10]).
         # Instead, we will use this instant sequence: np.array([5,..., 10])
-        self.action_instants = np.linspace(5, 20, 20)
+        self.action_instants = np.linspace(10, 20, 20)
 
         self.N = len(self.action_instants)  # number of actions
         self.N_TG = 5  # number of TG1 models
