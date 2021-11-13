@@ -24,7 +24,7 @@ save_dir = "delay_learning_200_action_40/"
 # setup environment and model
 env = gym.make('AndesFreqControl-v0')
 policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=[128, 64])
-model = DDPG(MlpPolicy, env, verbose=1, policy_kwargs=policy_kwargs, learning_starts=0)  #
+model = DDPG(MlpPolicy, env, verbose=1, policy_kwargs=policy_kwargs, learning_starts=200)  #
 
 # start training
 time_start = time.time()
@@ -63,4 +63,5 @@ ax.set_ylabel("Bus Frequency [Hz]", fontsize=16)
 ax.ticklabel_format(useOffset=False)
 for i in range(env.N_Bus):
     ax.plot(env.t_render, env.final_obs_render[:, i] * 60)
+plt.savefig("fig_freq_dynamics.pdf")
 
