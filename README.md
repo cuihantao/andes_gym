@@ -21,10 +21,10 @@ Clone the repository with
 conda create -n andes_gym --yes
 ```
 
-Install the previous version of ANDES with
+Install a recent version of ANDES with
 
 ```bash
-pip install andes==0.6.9
+pip install andes==1.5.8
 ```
 
 Install `mpi4py` from Intel with
