@@ -13,23 +13,23 @@ import torch
 # As an unsafe, unsupported, undocumented workaround you can set the environment variable KMP_DUPLICATE_LIB_OK=TRUE to allow the program to continue to execute, but that may cause crashes or silently produce incorrect results.
 # For more information, please see http://www.intel.com/software/products/support/.
 # os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
-from stable_baselines3.ddpg.policies import MlpPolicy
-from stable_baselines3 import DDPG
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.a2c.policies import MlpPolicy
+from stable_baselines3 import A2C
 
 plot_episode = True
-save_dir = "delay_learning_400_action_20/"
+save_dir = "delay_learning_200_action_20_a2c/"
 
 # to ensure 200 total training episodes, we need to pair the actions with the total_timesteps
 # action=20, total_timesteps=4000
 # action=40, total_timesteps=8000
 # action=60, total_timesteps=12000
 
-for id in range(1, 11):
+for id in range(1, 2):
     # setup environment and model
-    env = gym.make('AndesFreqControl-v0')
+    env = make_vec_env('AndesFreqControl-v0', n_envs=4)
     policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=[128, 64])
-    model = DDPG(MlpPolicy, env, verbose=1, policy_kwargs=policy_kwargs, learning_starts=400)  #
+    model = A2C(MlpPolicy, env, verbose=1, policy_kwargs=policy_kwargs)  #
 
     # start training
     time_start = time.time()
@@ -39,11 +39,11 @@ for id in range(1, 11):
     print("training {} completed using {}".format(id, time.time() - time_start))
 
     # save model
-    model.save(save_dir + "andes_secfreq_ddpg_fix_{}.pkl".format(id))
+    model.save(save_dir + "andes_secfreq_a2c_fix_{}.pkl".format(id))
 
     # save data
     freq = pd.DataFrame(env.final_freq)
-    freq.to_csv(save_dir + "andes_secfreq_ddpg_fix_{}.csv".format(id), index=False)
+    freq.to_csv(save_dir + "andes_secfreq_a2c_fix_{}.csv".format(id), index=False)
 
     # plot the results
     if plot_episode == True:
@@ -57,5 +57,5 @@ for id in range(1, 11):
         plt.yticks(fontsize=20)
         plt.title("Restored frequency under fixed disturbance via DRL secondary control", fontsize=16)
         plt.tight_layout()
-        plt.savefig(save_dir + "andes_secfreq_ddpg_fix_{}.png".format(id))
+        plt.savefig(save_dir + "andes_secfreq_a2c_fix_{}.png".format(id))
 
