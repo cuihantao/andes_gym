@@ -45,12 +45,13 @@ Install `gym`
 pip install gym
 ```
 
+Install a recent version of ANDES with
 
 ### Stable-baselines supporting `tensorflow`
 
 Install `tensorflow (cpu version)`
 ```bash
-pip install tensorflow
+pip install andes==1.5.8
 ```
 
 Install `keras`
