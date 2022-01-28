@@ -2,5 +2,5 @@
 mpi4py
 gym
 stable-baselines3
-tensorflow-gpu
+tensorflow
 andes

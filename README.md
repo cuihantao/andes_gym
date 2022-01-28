@@ -1,40 +1,95 @@
-andes_gym
-=========
+# andes_gym
+
 
 Andes environment for OpenAI Gym
 
 * Free software: GPL v3+
 
 
-Installation
-------------
-
+## Installation
 Create an empty conda environment with
-
 ```bash
-git clone https://github.com/cuihantao/andes_gym
+conda create -n drl-andes python=3.8
 ```
 
-Clone the repository with
-
+### Install ANDES
+The detailed instruction of Andes installation can be found [here](https://andes.readthedocs.io/en/stable/install.html).
 ```bash
-conda create -n andes_gym --yes
+conda config --add channels conda-forge
+conda config --set channel_priority flexible
+```
+Use `conda install` instead of `pip install` for `andes` installation
+```bash
+conda install andes
+```
+or in the root directory of `andes`, run
+```bash
+conda install --file requirements.txt
+conda install --file requirements-dev.txt
+python3 -m pip install -e .
+```
+Test if `andes` has been successfully installed by
+```bash
+andes selftest
 ```
 
-Install a recent version of ANDES with
-
-```bash
-pip install andes==1.5.8
-```
-
+### Install GYM
 Install `mpi4py` from Intel with
 
 ```bash
 conda install -c intel mpi4py
 ```
 
-In the root directory of `andes_gym` , install `andes_gym` in the development mode with
+Install `gym`
+```bash
+pip install gym
+```
 
+Install a recent version of ANDES with
+
+### Stable-baselines supporting `tensorflow`
+
+Install `tensorflow (cpu version)`
+```bash
+pip install andes==1.5.8
+```
+
+Install `keras`
+```bash
+pip install keras
+```
+
+Install `stable-baselines` or `stable-baselines3`
+Refer to the [stable-baselines](https://github.com/hill-a/stable-baselines) website or [stable-baselines3](https://github.com/whoiszyc/stable-baselines3) for detailed instruction.
+
+For `stable-baselines`
+
+Option 1:
+First `Homebrew` will be needed. Then, install the dependencies of `stable-baselines` as
+```bash
+brew install cmake openmpi
+```
+Then, open the `stable-baselines` repo, cd to the directory and 
+```bash
+pip install -e .
+```
+Option 2:
+```bash
+pip install stable-baselines
+```
+
+### Stable-baselines supporting `pytorch`
+For `stable-baselines3` （uses Pytorch 1.7）
+```bash
+pip install stable-baselines3
+```
+or in the root directory
+```bash
+pip install -e .
+```
+
+### Install `andes_gym`
+In the root directory of `andes_gym` , install `andes_gym` in the development mode with
 ```bash
 pip install -e .
 ```

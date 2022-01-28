@@ -5,7 +5,7 @@ This file was part of gym-power and is now part of andes_gym.
 
 Authors:
 Hantao Cui (cuihantao@gmail.com)
-Yichen Zhang (whoiszyc@hotmail.com)
+Yichen Zhang (whoiszyc@live.com)
 
 Modification and redistribution of this file is subject to a collaboration agreement.
 Derived source code should be made available to all authors.
@@ -16,7 +16,7 @@ import pathlib
 
 import matplotlib
 import matplotlib.pyplot as plt
-
+import random
 import numpy as np
 import andes
 
@@ -58,13 +58,16 @@ class AndesFreqControl(gym.Env):
         self.fixt = True   # if we do fixed step integration
         self.no_pbar = True
 
-        self.action_instants = np.array([0.5, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 3.5, 5.5, 6, 8, 10])
+        # we need to let the agent to observe the disturbed trajectory before any actions taken,
+        # therefore the following instant sequence is not correct: np.array([0.1, 5, 10]).
+        # Instead, we will use this instant sequence: np.array([5,..., 10])
+        self.action_instants = np.linspace(5, 20, 20)
 
         self.N = len(self.action_instants)  # number of actions
         self.N_TG = 5  # number of TG1 models
         self.N_Bus = 5  # let it be the number of generators for now
 
-        self.action_space = spaces.Box(low=-0.1, high=0.1, shape=(self.N_TG,))
+        self.action_space = spaces.Box(low=-0.3, high=0.3, shape=(self.N_TG,))
         self.observation_space = spaces.Box(low=-5, high=5, shape=(self.N_TG,))
 
         self.i = 0  # index of the current action
@@ -85,6 +88,9 @@ class AndesFreqControl(gym.Env):
         self.action_print = []
         self.reward_print = []
 
+        # record the final frequency
+        self.final_freq = []
+
     def seed(self, seed=None):
         """
         Generate the amount of load disturbance
@@ -97,7 +103,6 @@ class AndesFreqControl(gym.Env):
         Initialize the andes simulation
         """
         self.i = 0
-
         self.sim_case = andes.run(self.path, no_output=True)
         self.sim_case.PQ.config.p2p = 1
         self.sim_case.PQ.config.p2z = 0
@@ -106,6 +111,11 @@ class AndesFreqControl(gym.Env):
         self.sim_case.PQ.config.q2z = 0
         self.sim_case.PQ.config.q2i = 0
         self.sim_case.TDS.init()
+
+        # random or fixed disturbance
+        self.disturbance = 0.6  ## random.uniform(0.2, 0.5)
+        # self.disturbance = random.uniform(0.2, 0.5)
+        self.sim_case.Alter.amount.v[0] = self.disturbance
 
         # configurations
         self.sim_case.TDS.config.fixt = self.fixt
@@ -122,7 +132,11 @@ class AndesFreqControl(gym.Env):
         assert self.sim_to_next(), "First simulation step failed"
 
         self.freq_print = []
-        self.action_print = []
+        self.action_0_print = []
+        self.action_1_print = []
+        self.action_2_print = []
+        self.action_3_print = []
+        self.action_4_print = []
         self.reward_print = []
 
     def sim_to_next(self):
@@ -142,7 +156,9 @@ class AndesFreqControl(gym.Env):
     def reset(self):
         print("Env reset.")
         self.initialize()
-        return np.ones(shape=(self.N_Bus, ))
+        freq = self.sim_case.dae.x[self.w]
+        self.freq_print.append(freq[0])
+        return freq
 
     def step(self, action):
         """
@@ -152,7 +168,7 @@ class AndesFreqControl(gym.Env):
         done = False
 
         # Get the next action time in the list
-        if self.i >= len(self.action_instants):
+        if self.i >= len(self.action_instants) - 1:  # the learning ends before the last instant
             # all actions have been taken. wrap up the simulation
             done = True
 
@@ -180,23 +196,45 @@ class AndesFreqControl(gym.Env):
         # reward -= np.sum(np.abs(2 * 100 * action))
 
         if not sim_crashed and done:
-            reward -= np.sum(np.abs(60 * 100 * (freq - 1)))
+            reward -= np.sum(np.abs(3000 * (freq - 1)))
         else:
-            reward -= np.sum(np.abs(60 * 1000 * (freq - 1)))
+            reward -= np.sum(np.abs(100 * (freq - 1)))
 
         # store last action
         self.action_last = action
 
         # add the first frequency value to `self.freq_print`
         self.freq_print.append(freq[0])
-        self.action_print.append(action[0])
+        self.action_0_print.append(action[0])
+        self.action_1_print.append(action[1])
+        self.action_2_print.append(action[2])
+        self.action_3_print.append(action[3])
+        self.action_4_print.append(action[4])
         self.reward_print.append(reward)
 
         if done:
-            print("Action #0: {}".format(self.action_print))
+            self.action_total_print = []
+            for i in range(len(self.action_0_print)):
+                self.action_total_print.append(self.action_0_print[i]
+                                               + self.action_1_print[i]
+                                               + self.action_2_print[i]
+                                               + self.action_3_print[i]
+                                               + self.action_4_print[i])
+            print("Action #0: {}".format(self.action_0_print))
+            print("Action #1: {}".format(self.action_1_print))
+            print("Action #2: {}".format(self.action_2_print))
+            print("Action #3: {}".format(self.action_3_print))
+            print("Action #4: {}".format(self.action_4_print))
+            print("Action Total: {}".format(self.action_total_print))
+            print("Disturbance: {}".format(self.disturbance))
             print("Freq on #0: {}".format(self.freq_print))
+            print("Freq postfault: {}".format(self.freq_print[0] * 60))
+            print("Freq after control: {}".format(self.freq_print[-1] * 60))
             print("Rewards: {}".format(self.reward_print))
             print("Total Rewards: {}".format(sum(self.reward_print)))
+
+            # record the final frequency
+            self.final_freq.append(self.freq_print[-1] * 60)
 
             # store data for rendering. To workwround automatic resetting by VecEnv
             widx = self.w
@@ -222,8 +260,10 @@ class AndesFreqControl(gym.Env):
 
             self.ax.set_xlim(left=0, right=np.max(self.t_render))
             self.ax.set_ylim(auto=True)
-            self.ax.set_xlabel("Time [s]")
-            self.ax.set_ylabel("Bus Frequency [pu]")
+            self.ax.xaxis.set_tick_params(labelsize=16)
+            self.ax.yaxis.set_tick_params(labelsize=16)
+            self.ax.set_xlabel("Time [s]", fontsize=16)
+            self.ax.set_ylabel("Bus Frequency [Hz]", fontsize=16)
             self.ax.ticklabel_format(useOffset=False)
 
             plt.ion()
@@ -231,12 +271,12 @@ class AndesFreqControl(gym.Env):
             self.ax.clear()
             self.ax.set_xlim(left=0, right=np.max(self.t_render))
             self.ax.set_ylim(auto=True)
-            self.ax.set_xlabel("Time [s]")
-            self.ax.set_ylabel("Bus Frequency [pu]")
+            self.ax.set_xlabel("Time [s]", fontsize=16)
+            self.ax.set_ylabel("Bus Frequency [Hz]", fontsize=16)
             self.ax.ticklabel_format(useOffset=False)
 
         for i in range(self.N_Bus):
-            self.ax.plot(self.t_render, self.final_obs_render[:, i])
+            self.ax.plot(self.t_render, self.final_obs_render[:, i]*60)
 
         self.fig.canvas.draw()
 
